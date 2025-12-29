@@ -1,6 +1,25 @@
 <!DOCTYPE html>
 <html lang="ha">
-<head> <link rel="manifest" href="manifest.json">
+<head> <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+
+<script>
+  // Wadannan lambobin zaka sanya daga Firebase Console dinka
+  const firebaseConfig = {
+    apiKey: "AIzaSy...",
+    authDomain: "project-id.firebaseapp.com",
+    projectId: "project-id",
+    storageBucket: "project-id.appspot.com",
+    messagingSenderId: "...",
+    appId: "..."
+  };
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+</script>
+<link rel="manifest" href="manifest.json">
 <script>
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js');
