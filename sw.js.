@@ -1,0 +1,3 @@
+self.addEventListener('fetch', (event) => {
+  // Wannan zai taimaka wajen sa App din budewa da sauri
+});
