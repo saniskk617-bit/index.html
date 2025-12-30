@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ha">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sani SK - Kafar Ilimi</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <style>
+        :root { --primary: #075E54; --secondary: #128C7E; --bg: #ece5dd; }
+        body { font-family: sans-serif; margin: 0; background: var(--bg); }
+        .header { background: var(--primary); color: white; padding: 15px; text-align: center; }
+        .container { padding: 20px; max-width: 450px; margin: auto; }
+        .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        .tab-btn { background: #eee; color: #333; margin-bottom: 15px; }
+        #recaptcha-container { margin: 10px 0; }
+        .nav-tabs { display: flex; background: var(--secondary); color: white; cursor: pointer; }
+        .tab { flex: 1; padding: 12px; text-align: center; }
+        .tab.active { border-bottom: 3px solid white; font-weight: bold; }
+        .main-content { display: none; padding: 20px; }
+    </style>
+</head>
+<body>
+
+<div id="auth-page" class="container">
+    <div class="card">
+        <h2 style="text-align:center; color: var(--primary);">Sani SK</h2>
+        
+        <div id="login-options">
+            <button class="tab-btn" onclick="showAuthMethod('email')">Yi amfani da Gmail</button>
+            <button class="tab-btn" onclick="showAuthMethod('phone')">Yi amfani da Lambar Waya</button>
+        </div>
+
+        <div id="email-form" style="display:none;">
+            <input type="email" id="email" placeholder="Saka Gmail dinka">
+            <input type="password" id="password" placeholder="Kalmar sirri (6+)">
+            <button onclick="loginWithEmail()">Shiga / Register</button>
+            <button class="tab-btn" onclick="showAuthMethod('options')" style="font-size:12px;">Koma baya</button>
+        </div>
+
+        <div id="phone-form" style="display:none;">
+            <input type="text" id="phone-number" placeholder="+2348012345678">
+            <div id="recaptcha-container"></div>
+            <button id="send-otp-btn" onclick="sendOTP()">Tura Lambar OTP</button>
+            <div id="otp-section" style="display:none;">
+                <input type="text" id="otp-code" placeholder="Saka lambar 6 da aka tura maka">
+                <button onclick="verifyOTP()">Tabbatar da Lamba</button>
+            </div>
+            <button class="tab-btn" onclick="showAuthMethod('options')" style="font-size:12px;">Koma baya</button>
+        </div>
+    </div>
+</div>
+
+<div id="main-app" style="display:none;">
+    <div class="header"><h3>Sani SK Academy</h3></div>
+    <div class="nav-tabs">
+        <div class="tab active" id="t1" onclick="switchTab('labarai', 't1')">LABARAI</div>
+        <div class="tab" id="t2" onclick="switchTab('fira', 't2')">FIRA</div>
+        <div class="tab" id="t3" onclick="switchTab('profile', 't3')">PROFILE</div>
+    </div>
+
+    <div id="labarai" class="main-content" style="display:block;">
+        <div id="lessons-list"></div>
+    </div>
+
+    <div id="fira" class="main-content">
+        <div class="card"><p>Sashin tattaunawa zai bayyana nan kusa...</p></div>
+    </div>
+
+    <div id="profile" class="main-content">
+        <div class="card" style="text-align:center;">
+            <p id="user-info"></p>
+            <button onclick="logout()" style="background:#c62828;">Fita (Logout)</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Config din da ka samo a Screenshot din 14:01
+    const firebaseConfig = {
+        apiKey: "AIzaSyBdkKV8-6-ZGqLed992kBJkSSBrgSJve8Y",
+        authDomain: "sani-sk.firebaseapp.com",
+        projectId: "sani-sk",
+        storageBucket: "sani-sk.firebasestorage.app",
+        messagingSenderId: "811888329988",
+        appId: "1:811888329988:web:127e51adeccc93a1dbc517"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    // Google Recapcha don Lambar Waya
+    window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', { 'size': 'invisible' });
+
+    function showAuthMethod(method) {
+        document.getElementById('login-options').style.display = method === 'options' ? 'block' : 'none';
+        document.getElementById('email-form').style.display = method === 'email' ? 'block' : 'none';
+        document.getElementById('phone-form').style.display = method === 'phone' ? 'block' : 'none';
+    }
+
+    function loginWithEmail() {
+        const e = document.getElementById('email').value;
+        const p = document.getElementById('password').value;
+        auth.signInWithEmailAndPassword(e, p).catch(err => {
+            if(err.code === 'auth/user-not-found') return auth.createUserWithEmailAndPassword(e, p);
+            alert(err.message);
+        });
+    }
+
+    function sendOTP() {
+        const num = document.getElementById('phone-number').value;
+        auth.signInWithPhoneNumber(num, window.recaptchaVerifier).then(res => {
+            window.confirmationResult = res;
+            document.getElementById('otp-section').style.display = 'block';
+            document.getElementById('send-otp-btn').style.display = 'none';
+        }).catch(err => alert(err.message));
+    }
+
+    function verifyOTP() {
+        const code = document.getElementById('otp-code').value;
+        confirmationResult.confirm(code).catch(err => alert("Lambar ba ta yi ba!"));
+    }
+
+    auth.onAuthStateChanged(user => {
+        if(user) {
+            document.getElementById('auth-page').style.display = 'none';
+            document.getElementById('main-app').style.display = 'block';
+            document.getElementById('user-info').innerText = "Kayi shiga da: " + (user.email || user.phoneNumber);
+            loadLessons();
+        } else {
+            document.getElementById('auth-page').style.display = 'block';
+            document.getElementById('main-app').style.display = 'none';
+        }
+    });
+
+    function loadLessons() {
+        const data = [
+            {t: "ADDINI", d: "Muhimmancin kyautata niyya a dukkan ayyuka."},
+            {t: "RAYUWA", d: "Yadda zaka tsara lokacinka don samun nasara."},
+            {t: "KUDI", d: "Hanyoyin samun kudin shiga ta hanyar amfani da fasaha."}
+        ];
+        const list = document.getElementById('lessons-list');
+        list.innerHTML = "";
+        data.forEach(l => {
+            list.innerHTML += `<div class="card"><b>${l.t}</b><p>${l.d}</p></div><br>`;
+        });
+    }
+
+    function switchTab(id, tabId) {
+        document.querySelectorAll('.main-content').forEach(c => c.style.display = 'none');
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.getElementById(id).style.display = 'block';
+        document.getElementById(tabId).classList.add('active');
+    }
+
+    function logout() { auth.signOut(); }
+</script>
+</body>
+              </html>
+      
