@@ -1,46 +1,4 @@
 
-   
-            { d: 16, t: "Koyon Harshe da Fasaha", b: "Akwai Apps kamar Duolingo na koyon yare, da Khan Academy na lissafi. Maida wayarka makaranta. Minti 15 a rana yana bada sakamako mai girma." },
-            { d: 17, t: "Littafai a Tafin Hannu", b: "Zaka iya sauke dubbannin littafai (PDF) a wayarka. Maimakon scrolling na banza, karanta shafi 5 na wani littafi mai amfani a kullum." },
-            { d: 18, t: "Hada Zumunci Mai Amfani", b: "Yi a
-            { d: 22, t: "Hisabi (Accountability)", b: "A karshen rana, duba 'Screen Time' dinka. Awa nawa ka bata? A ina ka bata su? tsohuwa." },
-            { d: 27, t: "Guje Wa Ja-in-ja", b: "Watsapp Group ba wurin fada bane. Idan kaga zance ya nufi rigima, yi shiru ko ka fita. 'Barin gardama ko da kana kan gaskiya' sunnah ce." },
-            { d: 28, t: "Tsaftace Zuciya (Unfollow)", b: "Duk shafin da yake sa ka bakin ciki, tsoro, ko sha'awar banza, yi 'Unfollow'. Kare zuciyarka yana farawa daga kare idonka." },
-            { d: 29, t: "Muhasaba (Review)", b: "Yau rana ta 29. Waiwaya baya ka gani. Wanne darasi ne ya fi shiga jikinka? Shin ka canza wata dabi'a guda daya tun da muka fara?" },
-            { d: 30, t: "Kammalawa: Sabon Shafi", b: "Wayar hannu baiwa ce daga Allah. Mun gama darussa 30, amma aiki yanzu ya fara. Rike wayarka da tsoron Allah, zata zama hujja a gare ka, ba a kanka ba." }
-        ];
-
-        // --- USER LOGIC ---
-        let currentUser = "";
-
-        window.onload = function() {
-            const savedUser = localStorage.getItem('saniSkUser');
-            if(savedUser) {
-                currentUser = savedUser;
-                showMainApp();
-            }
-        };
-
-        function login() {
-            const input = document.getElementById('usernameInput');
-            const name = input.value.trim();
-            if(name) {
-                currentUser = name;
-                localStorage.setItem('saniSkUser', name);
-                showMainApp();
-            } else {
-                alert("Don Allah rubuta sunanka.");
-            }
-        }
-
-        function handleLoginEnter(e) {
-            if(e.key === "Enter") login();
-        }
-
-        function logout() {
-            localStorage.removeItem('saniSkUser');
-            location.reload();
-        }
 
         f
                         <div class="post-title">${post.t}</div>
@@ -65,25 +23,4 @@
                 const replies = [
                     "Masha Allah, mun gode da wannan gudummawar!",
                     "Gaskiya ne, wannan darasi ya taba zuciya.",
-                    "Haka ne, Allah ya sa mu dace.",
-                    "Na gane sosai, zan yi kokarin gyarawa insha Allah.",
-                    "Sako ya shigo! Muna godiya."
-                ];
-                const randomReply = replies[Math.floor(Math.random() * replies.length)];
-                addMessage(randomReply, 'received');
-            }, 1500);
-        }
-
-        function addMessage(text, type) {
-            const container = document.getElementById('chatContainer');
-            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            
-            const html = `
-                <div class="message msg-${type}">
-                    ${text}
-                    <span class="msg-time">${time}</span>
-                </div>
-            `;
-            container.insertAdjacentHTML('beforeend', html);
-            containe
-    
+                    "Haka 
