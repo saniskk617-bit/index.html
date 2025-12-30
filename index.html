@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ha">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sani SK - Manhajar Matasa</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    <style>
+        :root { --whatsapp-green: #075E54; --whatsapp-light: #128C7E; --bg: #ece5dd; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background-color: var(--bg); }
+        .header { background: var(--whatsapp-green); color: white; padding: 15px; text-align: center; position: sticky; top: 0; z-index: 1000; }
+        .nav-tabs { display: flex; background: var(--whatsapp-light); color: white; cursor: pointer; position: sticky; top: 60px; z-index: 1000; }
+        .tab { flex: 1; padding: 12px; text-align: center; font-weight: bold; border-bottom: 3px solid transparent; }
+        .tab.active { border-bottom: 3px solid white; }
+        .container { padding: 20px; max-width: 600px; margin: auto; display: none; }
+        .container.active { display: block; }
+        .card { background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        .auth-form { display: flex; flex-direction: column; gap: 10px; margin-top: 50px; }
+        input { padding: 12px; border: 1px solid #ccc; border-radius: 5px; }
+        button { padding: 12px; background: var(--whatsapp-green); color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .lesson-tag { display: inline-block; padding: 3px 8px; background: #e1f5fe; color: #0288d1; border-radius: 4px; font-size: 12px; margin-bottom: 5px; }
+    </style>
+</head>
+<body>
+
+<div id="auth-page" class="container active">
+    <div class="card auth-form">
+        <h2 style="text-align: center; color: var(--whatsapp-green);">Sani SK</h2>
+        <input type="email" id="email" placeholder="Imel (Email)">
+        <input type="password" id="password" placeholder="Kalmar Sirri (Akalla 6)">
+        <button onclick="handleAuth()">Shiga / Rijista</button>
+        <p id="auth-error" style="color: red; font-size: 14px;"></p>
+    </div>
+</div>
+
+<div id="main-app" style="display: none;">
+    <div class="header">
+        <h3 id="app-title">Sani SK Academy</h3>
+    </div>
+    <div class="nav-tabs">
+        <div class="tab active" onclick="switchTab('labarai', this)">LABARAI</div>
+        <div class="tab" onclick="switchTab('fira', this)">FIRA</div>
+        <div class="tab" onclick="switchTab('profile', this)">PROFILE</div>
+    </div>
+
+    <div id="labarai" class="container active">
+        </div>
+
+    <div id="fira" class="container">
+        <div class="card">
+            <p>Sashin fira yana zuwa nan kusa. Za ka iya magana da sauran mutane.</p>
+        </div>
+    </div>
+
+    <div id="profile" class="container">
+        <div class="card" style="text-align: center;">
+            <div style="width: 70px; height: 70px; background: #ccc; border-radius: 50%; margin: 10px auto;"></div>
+            <h4 id="user-name">Sunanka</h4>
+            <p id="user-email"></p>
+            <button onclick="logout()" style="background: #e53935;">Fita (Logout)</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Lambobin da ka samo daga Firebase
+    const firebaseConfig = {
+        apiKey: "AIzaSyBdkKV8-6-ZGqLed992kBJkSSBrgSJve8Y",
+        authDomain: "sani-sk.firebaseapp.com",
+        projectId: "sani-sk",
+        storageBucket: "sani-sk.firebasestorage.app",
+        messagingSenderId: "811888329988",
+        appId: "1:811888329988:web:127e51adeccc93a1dbc517",
+        measurementId: "G-QW8FPM49P2"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    // Misalan Darussa
+    const darussa = [
+        { cat: "KUDI", title: "Sana'ar Intanet", desc: "Zamanin nan, wayarka ita ce hanyar samun kudin shiga." },
+        { cat: "RAYUWA", title: "Amfanin Hakuri", desc: "Duk wanda bai iya hakuri ba, ba zai iya shugabanci ba." },
+        { cat: "ADDINI", title: "Kyautata Niyya", desc: "Kowane aiki yana farawa ne daga kyakkyawar niyya." },
+        { cat: "SOYAYYA", title: "Zabar Abokin Zama", desc: "Kada ka duba kyau kadai, duba hali da tarbiyya." },
+        { cat: "ILIMI", title: "Neman Ilimi", desc: "Ilimi shi ne makamin da za ka iya canza duniya da shi." }
+    ];
+
+    function handleAuth() {
+        const email = document.getElementById('email').value;
+        const pass = document.getElementById('password').value;
+        
+        auth.createUserWithEmailAndPassword(email, pass).catch(err => {
+            if(err.code === "auth/email-already-in-use") {
+                return auth.signInWithEmailAndPassword(email, pass);
+            }
+            document.getElementById('auth-error').innerText = err.message;
+        });
+    }
+
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            document.getElementById('auth-page').style.display = 'none';
+            document.getElementById('main-app').style.display = 'block';
+            document.getElementById('user-email').innerText = user.email;
+            loadLessons();
+        } else {
+            document.getElementById('auth-page').style.display = 'block';
+            document.getElementById('main-app').style.display = 'none';
+        }
+    });
+
+    function loadLessons() {
+        const container = document.getElementById('labarai');
+        container.innerHTML = "";
+        darussa.forEach(l => {
+            container.innerHTML += `
+                <div class="card">
+                    <span class="lesson-tag">${l.cat}</span>
+                    <h3>${l.title}</h3>
+                    <p>${l.desc}</p>
+                    <button style="font-size: 12px; width: 100%;">Karanta Darasin</button>
+                </div>`;
+        });
+    }
+
+    function switchTab(tabId, el) {
+        document.querySelectorAll('.container').forEach(c => c.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        el.classList.add('active');
+    }
+
+    function logout() { auth.signOut(); }
+</script>
+</body>
+  </html>
+                                                                                                               
