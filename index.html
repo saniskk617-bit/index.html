@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ha">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sani SK - Kafar Ilimi</title>
+    <style>
+        :root { --primary: #075E54; --secondary: #128C7E; --light: #DCF8C6; }
+        body { font-family: Arial, sans-serif; margin: 0; background: #ece5dd; }
+        
+        /* Login Screen */
+        #auth-screen { display: flex; flex-direction: column; align-items: center; padding: 50px; }
+        .input-group { margin-bottom: 15px; }
+        input { padding: 12px; width: 250px; border-radius: 8px; border: 1px solid #ccc; }
+        button { padding: 12px 30px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; }
+
+        /* Main App Layout */
+        #main-app { display: none; }
+        .header { background: var(--primary); color: white; padding: 15px; text-align: center; position: sticky; top: 0; }
+        
+        /* Tabs Navbar */
+        .tabs { display: flex; background: var(--secondary); color: white; cursor: pointer; }
+        .tab { flex: 1; padding: 15px; text-align: center; border-bottom: 3px solid transparent; }
+        .tab.active { border-bottom: 3px solid white; font-weight: bold; }
+
+        /* Content Sections */
+        .content-section { display: none; padding: 20px; padding-bottom: 80px; }
+        .content-section.active { display: block; }
+
+        /* Lesson Cards */
+        .lesson-card { background: white; padding: 15px; margin-bottom: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .lesson-card h3 { margin-top: 0; color: var(--primary); }
+
+        /* Chat List */
+        .chat-item { background: white; padding: 15px; border-bottom: 1px solid #eee; display: flex; align-items: center; }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; background: #ccc; margin-right: 15px; }
+    </style>
+</head>
+<body>
+
+<div id="auth-screen">
+    <h2 style="color: var(--primary);">Sani SK</h2>
+    <div class="input-group">
+        <input type="text" id="username" placeholder="Saka Sunanka">
+    </div>
+    <div class="input-group">
+        <input type="password" id="password" placeholder="Kalmar Sirri (6+)">
+    </div>
+    <button onclick="login()">Shiga / Rijista</button>
+    <p id="admin-note" style="font-size: 12px; color: #666; margin-top: 20px;">Admin: sanisb617@gmail.com</p>
+</div>
+
+<div id="main-app">
+    <div class="header">
+        <h2 id="user-display">Sani SK</h2>
+    </div>
+
+    <div class="tabs">
+        <div class="tab active" onclick="showTab('labarai')">LABARAI</div>
+        <div class="tab" onclick="showTab('fira')">FIRA</div>
+        <div class="tab" onclick="showTab('profile')">PROFILE</div>
+    </div>
+
+    <div id="labarai" class="content-section active">
+        <div id="lesson-list">
+            </div>
+    </div>
+
+    <div id="fira" class="content-section">
+        <div class="chat-item">
+            <div class="avatar"></div>
+            <div><strong>Sani SK (Admin)</strong><br><small>Ina nan kusa...</small></div>
+        </div>
+        <div class="chat-item">
+            <div class="avatar"></div>
+            <div><strong>Musa Danladi</strong><br><small>Yaushe za a saka sabon darasi?</small></div>
+        </div>
+    </div>
+
+    <div id="profile" class="content-section">
+        <div class="lesson-card" style="text-align: center;">
+            <div style="width: 80px; height: 80px; background: #ccc; border-radius: 50%; margin: 0 auto 15px;"></div>
+            <h3 id="prof-name">Sunanka</h3>
+            <p>Harshe: Hausa</p>
+            <button onclick="logout()" style="background: #d32f2f;">Fita (Logout)</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Database din darussa guda 10 na farko a matsayin misali
+    const darussa = [
+        { title: "Rayuwa: Manufar Rayuwa", body: "Duk abinda zaka yi, ka tabbata kana da manufa mai kyau..." },
+        { title: "Kudi: Sana'ar Intanet", body: "A zamanin nan, wayarka ita ce shagonka. Koyi editing ko copy writing..." },
+        { title: "Ilimi: Amfanin Karatu", body: "Ilimi haske ne, bincike shi ne mabuɗin sanin gaskiya..." },
+        { title: "Addini: Kyautata Niyya", body: "Dukkan aiki yana tafiya ne da niyya. Ka kyautata niyyarka ga Allah..." },
+        { title: "Soyayya: Girmama Juna", body: "Ba soyayya bace idan babu girmama ra'ayin juna..." }
+    ];
+
+    function login() {
+        let name = document.getElementById('username').value;
+        let pass = document.getElementById('password').value;
+
+        if(name.length > 2 && pass.length >= 6) {
+            document.getElementById('auth-screen').style.display = 'none';
+            document.getElementById('main-app').style.display = 'block';
+            document.getElementById('user-display').innerText = "Barka da zuwa, " + name;
+            document.getElementById('prof-name').innerText = name;
+            loadLessons();
+        } else {
+            alert("Saka suna da kalmar sirri akalla haruffa 6");
+        }
+    }
+
+    function loadLessons() {
+        let list = document.getElementById('lesson-list');
+        list.innerHTML = "";
+        darussa.forEach(d => {
+            list.innerHTML += `
+                <div class="lesson-card">
+                    <h3>${d.title}</h3>
+                    <p>${d.body}</p>
+                    <button style="font-size: 10px; padding: 5px 10px;">Karanta Kara...</button>
+                </div>
+            `;
+        });
+    }
+
+    function showTab(tabId) {
+        document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        event.currentTarget.classList.add('active');
+    }
+
+    function logout() {
+        location.reload();
+    }
+</script>
+
+</body>
+</html>
