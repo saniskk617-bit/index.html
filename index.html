@@ -1,26 +1,222 @@
+<!DOCTYPE html>
+<html lang="ha">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sani SK - Taskar Ilimi</title>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 
+    <script>
+        // SANYA BAYANAN PROJECT DIN KA NA GOOGLE ANAN
+        const firebaseConfig = {
+            apiKey: "SAKA_API_KEY_DIN_KA_ANAN", 
+            authDomain: "silver-spark-482720-u7.firebaseapp.com",
+            projectId: "silver-spark-482720-u7",
+            storageBucket: "silver-spark-482720-u7.appspot.com",
+            messagingSenderId: "776655443322",
+            appId: "1:776655443322:web:abc123456"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+    </script>
 
-        f
-                        <div class="post-title">${post.t}</div>
-                        <div class="post-body">${post.b}</div>
-                    </div>
-                `;
-                container.innerHTML += html;
-            });
+    <style>
+        :root {
+            --primary-color: #0c6155;
+            --bg-color: #efeae2;
+            --chat-sent: #d9fdd3;
+            --chat-received: #ffffff;
+            --btn-green: #25d366;
         }
+
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; 
+            margin: 0; background-color: var(--bg-color); 
+            height: 100vh; display: flex; flex-direction: column; overflow: hidden;
+        }
+
+        /* --- LOGIN SCREEN --- */
+        .auth-container { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            display: flex; justify-content: center; align-items: center; 
+            background-color: var(--primary-color); z-index: 1000;
+        }
+        .auth-card { 
+            width: 85%; max-width: 350px; background: white; 
+            padding: 30px; border-radius: 15px; text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        /* --- APP STRUCTURE --- */
+        .header { background: var(--primary-color); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .nav-tabs { background: var(--primary-color); display: flex; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .tab { flex: 1; text-align: center; padding: 15px; color: rgba(255,255,255,0.7); cursor: pointer; font-weight: bold; }
+        .active-tab { color: white; border-bottom: 3px solid white; }
+
+        .content-area { flex: 1; overflow-y: auto; padding: 10px; }
+        .post-card { 
+            background: white; padding: 16px; margin-bottom: 15px; 
+            border-radius: 10px; border-left: 5px solid var(--primary-color);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .post-card h3 { margin-top: 0; color: var(--primary-color); font-size: 18px; }
+        .post-card p { color: #444; line-height: 1.5; font-size: 15px; }
+
+        /* --- CHAT --- */
+        .chat-view-container { display: flex; flex-direction: column; height: 100%; }
+        .messages-container { flex: 1; display: flex; flex-direction: column; padding: 10px; overflow-y: auto; }
+        .message { 
+            max-width: 80%; padding: 10px; margin: 5px; border-radius: 10px; font-size: 14px; 
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1); position: relative;
+        }
+        .msg-sent { background: var(--chat-sent); align-self: flex-end; border-top-right-radius: 0; }
+        .msg-received { background: var(--chat-received); align-self: flex-start; border-top-left-radius: 0; }
+        .msg-info { font-size: 10px; color: #777; margin-bottom: 3px; display: block; }
+
+        .chat-input-wrapper { display: flex; padding: 10px; background: #f0f0f0; align-items: center; }
+        .input-box { flex: 1; padding: 12px; border-radius: 25px; border: 1px solid #ddd; outline: none; }
+        .send-btn { 
+            background: var(--btn-green); border: none; border-radius: 50%; 
+            width: 45px; height: 45px; margin-left: 8px; color: white; 
+            font-size: 20px; cursor: pointer;
+        }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <div id="authScreen" class="auth-container">
+        <div class="auth-card">
+            <h1 style="color:var(--primary-color)">Sani SK</h1>
+            <p>Barka da zuwa Taskar Ilimi. Shiga da Gmail dinka don ganin darussa da fara hira.</p>
+            <button onclick="loginWithGoogle()" style="width:100%; padding:15px; background:#4285F4; color:white; border:none; border-radius:8px; font-weight:bold; cursor:pointer; font-size:16px;">
+                Shiga da Google
+            </button>
+        </div>
+    </div>
+
+    <div id="appScreen" class="hidden" style="height: 100%; flex-direction: column;">
+        <div class="header">
+            <b id="userDisplay">...</b>
+            <button onclick="logout()" style="background:rgba(255,255,255,0.2); border:none; color:white; padding:5px 12px; border-radius:5px; cursor:pointer;">Fita</button>
+        </div>
+
+        <div class="nav-tabs">
+            <div id="tab1" class="tab active-tab" onclick="switchTab('darussa')">DARUSSA</div>
+            <div id="tab2" class="tab" onclick="switchTab('chat')">TATTAUNAWA</div>
+        </div>
+
+        <div class="content-area">
+            <div id="view-darussa">
+                <div id="posts-container"></div>
+            </div>
+
+            <div id="view-chat" class="hidden chat-view-container">
+                <div class="messages-container" id="chatBox"></div>
+                <div class="chat-input-wrapper">
+                    <input type="text" id="msgInput" class="input-box" placeholder="Rubuta sako..." onkeypress="handleEnter(event)">
+                    <button class="send-btn" onclick="sendMessage()">➤</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+
+        // --- AUTH LOGIC ---
+        function loginWithGoogle() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider).catch(err => alert("Kuskure: " + err.message));
+        }
+
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                currentUser = user;
+                document.getElementById('authScreen').classList.add('hidden');
+                document.getElementById('appScreen').classList.remove('hidden');
+                document.getElementById('userDisplay').innerText = user.displayName;
+                renderPosts();
+                listenForMessages();
+            } else {
+                document.getElementById('authScreen').classList.remove('hidden');
+                document.getElementById('appScreen').classList.add('hidden');
+            }
+        });
+
+        function logout() { auth.signOut(); }
 
         // --- CHAT LOGIC ---
         function sendMessage() {
-            const input = document.getElementById('msgInput');
-            const text = input.value.trim();
-            if(!text) return;
+            const msgInput = document.getElementById('msgInput');
+            const text = msgInput.value.trim();
+            if (!text) return;
 
-            addMessage(text, 'sent');
-            input.value = "";
-            
-            // Auto reply Simulation
-            setTimeout(() => {
-                const replies = [
-                    "Masha Allah, mun gode da wannan gudummawar!",
-                    "Gaskiya ne, wannan darasi ya taba zuciya.",
-                    "Haka 
+            db.collection("chat").add({
+                name: currentUser.displayName,
+                text: text,
+                uid: currentUser.uid,
+                time: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            msgInput.value = "";
+        }
+
+        function handleEnter(e) { if(e.key === 'Enter') sendMessage(); }
+
+        function listenForMessages() {
+            db.collection("chat").orderBy("time").limitToLast(50).onSnapshot(snap => {
+                const chatBox = document.getElementById('chatBox');
+                chatBox.innerHTML = "";
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    const type = data.uid === currentUser.uid ? 'sent' : 'received';
+                    chatBox.innerHTML += `
+                        <div class="message msg-${type}">
+                            <span class="msg-info">${data.name}</span>
+                            ${data.text}
+                        </div>`;
+                });
+                chatBox.scrollTop = chatBox.scrollHeight;
+            });
+        }
+
+        // --- TABS & CONTENT ---
+        function switchTab(t) {
+            document.getElementById('view-darussa').classList.toggle('hidden', t !== 'darussa');
+            document.getElementById('view-chat').classList.toggle('hidden', t !== 'chat');
+            document.getElementById('tab1').classList.toggle('active-tab', t === 'darussa');
+            document.getElementById('tab2').classList.toggle('active-tab', t === 'chat');
+        }
+
+        function renderPosts() {
+            const darussa = [
+                {t: "Rana 1: Wayar Hannu", b: "Wayar ka tamkar wuka ce; tana iya yi maka amfani, tana iya yanke ka. Yi amfani da ita wajen neman ilimi ba bata lokaci ba."},
+                {t: "Rana 2: Lokaci da Social Media", b: "Mafi yawan mutane suna bata sama da awa 4 a rana a TikTok da Facebook. Ka takaita lokacin ka don ka samu damar yin wasu abubuwan."},
+                {t: "Rana 3: Kariyar Bayanan Sirri", b: "Kada ka taba tura lambar sirri (OTP) ko password din ka ga wani a yanar gizo, koda kuwa ya ce shi ma'aikacin banki ne."},
+                {t: "Rana 4: Ladabin Group Chat", b: "Kada ka zama mai tura sakonni na karya (Fake News) a group. Tantance labari kafin yadawa."},
+                {t: "Rana 5: Cinikin Yanar Gizo", b: "Idan zaka sayi kaya a yanar gizo, tabbatar shafin yana da aminci kuma kar ka biya kudi har sai ka ga abin da ka saya idan za ta yiwu."},
+                {t: "Rana 6: Lafiyar Ido", b: "Yawan kallon waya a daki mai duhu yana raunana ido. Yi amfani da 'Night Mode' don kiyaye lafiyar ka."},
+                {t: "Rana 7: Neman Sana'a", b: "Yanar gizo cike take da damammaki na koyon sana'o'i kamar dinki, girki, ko gyaran waya. Yi amfani da YouTube yadda ya kamata."},
+                {t: "Rana 8: Zumunci a Wayar Hannu", b: "Kada waya ta raba ka da mutanen da kuke zaune a daki daya. Ka ba mutanen kusa da kai lokaci na zahiri."},
+                {t: "Rana 9: Kariya daga Hackers", b: "Sanya 'Two-Factor Authentication' a kowane account naka na WhatsApp da Gmail don kare kanka daga barayin yanar gizo."},
+                {t: "Rana 10: Adana Kudi", b: "Akwai Apps da yawa na banki da suke taimakawa wajen yin ajiyar kudi. Fara tanadi yau koda da kadan ne."},
+                {t: "Rana 11 - 30", b: "Wadannan darussan za su rika bayyana daya bayan daya a kullum don ilmantar da kai kan yadda zaka zama kwararre a zamanin nan na digital."}
+            ];
+            const container = document.getElementById('posts-container');
+            container.innerHTML = darussa.map(p => `
+                <div class="post-card">
+                    <h3>${p.t}</h3>
+                    <p>${p.b}</p>
+                </div>
+            `).join('');
+        }
+    </script>
+</body>
+</html>
+
