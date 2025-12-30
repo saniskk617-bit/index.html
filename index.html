@@ -273,49 +273,7 @@
             location.reload();
         }
 
-        function showMainApp() {
-            document.getElementById('authScreen').style.display = 'none';
-            document.getElementById('appScreen').style.display = 'flex';
-            renderPosts();
-            
-            // Welcome message in chat
-            const chatBox = document.getElementById('chatContainer');
-            if(chatBox.innerHTML.trim() === "") {
-                setTimeout(() => {
-                    addMessage(`Barka da zuwa <b>${currentUser}</b>! Muna farin cikin ganinka a Sani SK App.`, 'received');
-                    addMessage(`Duba bangaren DARUSSA don ganin darussan mu guda 30.`, 'received');
-                }, 500);
-            }
-        }
-
-        // --- TAB LOGIC ---
-        function switchTab(tabName) {
-            document.getElementById('view-darussa').classList.add('hidden');
-            document.getElementById('view-tattaunawa').classList.add('hidden');
-            document.getElementById('tab1').classList.remove('active-tab');
-            document.getElementById('tab2').classList.remove('active-tab');
-
-            if(tabName === 'darussa') {
-                document.getElementById('view-darussa').classList.remove('hidden');
-                document.getElementById('tab1').classList.add('active-tab');
-            } else {
-                document.getElementById('view-tattaunawa').classList.remove('hidden');
-                document.getElementById('tab2').classList.add('active-tab');
-            }
-        }
-
-        // --- POSTS RENDER ---
-        function renderPosts() {
-            const container = document.getElementById('posts-container');
-            container.innerHTML = "";
-            
-            postsDB.forEach(post => {
-                const html = `
-                    <div class="post-card">
-                        <div class="post-header">
-                            <span class="post-day">Rana ta ${post.d}</span>
-                            <span class="post-author">Sani SK</span>
-                        </div>
+        f
                         <div class="post-title">${post.t}</div>
                         <div class="post-body">${post.b}</div>
                     </div>
